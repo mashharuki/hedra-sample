@@ -179,5 +179,6 @@ Hedera SDKはJavaScript、Java、Goを中心に提供される。SDK利用では
 - [emplace.jp: Hedera解説](https://emplace.jp/crypto/20250610-em696/)
 - [Gate: Hedera technology and use cases](https://www.gate.com/ja/crypto-wiki/article/what-is-hedera-understanding-its-blockchain-technology-and-use-cases-in-2025)
 - [Web3Report: Hedera](https://www.web3report.net/hedera/)
+- [Hashscan](https://hashscan.io/testnet/home)
 
 外部資料は導入理解の補助に留め、技術仕様、受賞、ネットワーク状態、セキュリティ判断は上記の公式・一次資料を優先する。
