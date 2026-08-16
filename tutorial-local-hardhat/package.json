@@ -1,0 +1,20 @@
+{
+  "name": "tutorial-local-hardhat",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "npx hardhat build",
+    "test": "npx hardhat test",
+    "send-tx": "npx hardhat run scripts/send-tx.ts",
+    "deploy": "npx hardhat run scripts/deploy.ts"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ignition": "^3.1.8",
+    "@nomicfoundation/hardhat-toolbox-viem": "^5.0.7",
+    "@types/node": "^22.20.1",
+    "forge-std": "github:foundry-rs/forge-std#v1.9.4",
+    "hardhat": "^3.13.0",
+    "typescript": "~6.0.3",
+    "viem": "^2.55.16"
+  }
+}
