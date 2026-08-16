@@ -143,6 +143,7 @@ Hedera SDKはJavaScript、Java、Goを中心に提供される。SDK利用では
 - [Hedera audits and standards](https://hedera.com/audits-and-standards)
 - [Hedera bug bounty](https://immunefi.com/bug-bounty/hedera/information/)
 - [2023 Smart Contract Service incident postmortem](https://hedera.com/blog/analysis-remediation-of-the-precompile-attack-on-the-hedera-network/)
+- [Hardhat tutorial](https://docs.hedera.com/evm/tools/hardhat#whats-new-hardhat-2-3)
 
 ### 指定された開発資料
 
