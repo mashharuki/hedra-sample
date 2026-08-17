@@ -144,6 +144,8 @@ Hedera SDKはJavaScript、Java、Goを中心に提供される。SDK利用では
 - [Hedera bug bounty](https://immunefi.com/bug-bounty/hedera/information/)
 - [2023 Smart Contract Service incident postmortem](https://hedera.com/blog/analysis-remediation-of-the-precompile-attack-on-the-hedera-network/)
 - [Hardhat tutorial](https://docs.hedera.com/evm/tools/hardhat#whats-new-hardhat-2-3)
+- [GitHub - @x402/hedra](https://github.com/x402-foundation/x402/tree/main/typescript/packages/mechanisms/hedera)
+- [公式ドキュメント](https://docs.hedera.com/solutions/ai/x402)
 
 ### 指定された開発資料
 
