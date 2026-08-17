@@ -6,16 +6,22 @@ import { ExactHederaScheme } from "@x402/hedera/exact/client";
 
 import { readClientConfig } from "./config.js";
 
+// 設定を読み込み
 const config = readClientConfig();
+// Hederaの署名者を作成
 const signer = createClientHederaSigner(
   config.payerAccountId,
   PrivateKey.fromString(config.payerPrivateKey),
   { network: "hedera:testnet" },
 );
+
+// X402クライアントを作成し、Hederaの署名者を登録
 const client = new x402Client().register(
   "hedera:*",
   new ExactHederaScheme(signer),
 );
+
+// X402クライアントを使って、リソースサーバーに対して支払い付きのリクエストを送信
 const response = await wrapFetchWithPayment(
   fetch,
   client,

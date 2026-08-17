@@ -6,9 +6,15 @@ export type ClientConfig = {
   resourceServerUrl: string;
 };
 
+/**
+ * 設定を読み込む
+ * @param env 
+ * @returns 
+ */
 export function readClientConfig(
   env: NodeJS.ProcessEnv = process.env,
 ): ClientConfig {
+  // 環境変数から値を取得
   const payerAccountId = env.PAYER_ACCOUNT_ID;
   const payerPrivateKey = env.PAYER_PRIVATE_KEY;
   const resourceServerUrl = env.RESOURCE_SERVER_URL ?? "http://localhost:4021";

@@ -25,6 +25,18 @@ Set `PAY_TO_ACCOUNT_ID` in `apps/server/.env`, then set `PAYER_ACCOUNT_ID` and `
 pnpm dev:server
 ```
 
+```bash
+curl http://localhost:4021/health
+```
+
+以下のように帰ってくればOK!
+
+```json
+{
+  "status":"ok"
+}
+```
+
 Run the explicitly authorized live payment check in another terminal:
 
 ```sh

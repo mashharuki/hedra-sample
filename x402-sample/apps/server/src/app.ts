@@ -5,17 +5,29 @@ import { Hono } from "hono";
 
 import type { ServerConfig } from "./config.js";
 
+/**
+ * Honoインスタンスを生成
+ * @param config 
+ * @returns 
+ */
 export function createApp(config: ServerConfig): Hono {
+  // Facilitatorクライアントとリソースサーバーを生成
   const facilitatorClient = new HTTPFacilitatorClient({
     url: config.facilitatorUrl,
   });
+
+  // x402リソースサーバーを生成(hedra:*スキームをサポート)
   const resourceServer = new x402ResourceServer(facilitatorClient).register(
     "hedera:*",
     new ExactHederaScheme(),
   );
+  // Honoインスタンスを生成
   const app = new Hono();
 
+  // ヘルスチェック用のエンドポイントを追加
   app.get("/health", (context) => context.json({ status: "ok" }));
+
+  // /premiumエンドポイントに対して、x402の支払いミドルウェアを追加
   app.use(
     "/premium",
     paymentMiddleware(
@@ -27,7 +39,7 @@ export function createApp(config: ServerConfig): Hono {
               network: "hedera:testnet",
               price: {
                 amount: config.priceTinybars,
-                asset: "0.0.0",
+                asset: "0.0.0", // HBAR
               },
               payTo: config.payToAccountId,
               maxTimeoutSeconds: 180,
