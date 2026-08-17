@@ -9,6 +9,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@x402/core": "2.18.0",
     "@x402/fetch": "2.18.0",
     "@x402/hedera": "2.18.0",
     "dotenv": "17.2.3"
