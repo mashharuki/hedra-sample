@@ -1,0 +1,22 @@
+{
+  "name": "@x402-sample/client",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "start": "tsx src/index.ts",
+    "test:live": "tsx src/live-test.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@x402/fetch": "2.18.0",
+    "@x402/hedera": "2.18.0",
+    "dotenv": "17.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "tsx": "4.21.0",
+    "typescript": "5.9.3",
+    "vitest": "4.0.14"
+  }
+}

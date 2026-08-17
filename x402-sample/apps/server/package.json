@@ -1,0 +1,25 @@
+{
+  "name": "@x402-sample/server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@hono/node-server": "1.19.6",
+    "@x402/core": "2.18.0",
+    "@x402/hedera": "2.18.0",
+    "@x402/hono": "2.18.0",
+    "dotenv": "17.2.3",
+    "hono": "4.10.7"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "tsx": "4.21.0",
+    "typescript": "5.9.3",
+    "vitest": "4.0.14"
+  }
+}
