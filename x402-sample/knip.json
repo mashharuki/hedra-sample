@@ -1,5 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignoreExportsUsedInFile": { "type": true },
   "workspaces": {
     "apps/server": {
       "project": ["src/**/*.ts", "test/**/*.ts"]
@@ -15,7 +16,7 @@
         "vitest.config.ts"
       ],
       "project": ["src/**/*.{ts,tsx}", "scripts/**/*.ts"],
-      "ignoreDependencies": ["@x402/core", "@x402/fetch", "dotenv"]
+      "ignoreDependencies": ["@x402/fetch", "dotenv"]
     }
   }
 }
