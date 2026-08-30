@@ -14,7 +14,9 @@ cp apps/frontend/.env.example apps/frontend/.env
 `apps/frontend/.env` を設定:
 
 - `VITE_PRIVY_APP_ID` — Privy Dashboard の App ID
-- `VITE_RESOURCE_SERVER_URL` — 既定 `http://localhost:4021`
+- `VITE_RESOURCE_SERVER_URL` — 値は `.env.example`
+  （`http://localhost:4021`）から取る。コード側に既定値はなく、未設定なら
+  `loadConfig` が例外を投げる
 
 Privy Dashboard 側:
 
@@ -50,7 +52,7 @@ pnpm --filter frontend dev
    （既定 `http://localhost:5173`）を開き、Privy でログインする。
 4. 表示された Wallet（EVM アドレス）に資金を投入:
    ```sh
-   pnpm --filter frontend fund 0xあなたのアドレス
+   pnpm --filter frontend run fund 0xあなたのアドレス
    ```
    `apps/client/.env` の資金済み口座から 5 ℏ を送金し、`0.0.X` を
    lazy-create する。出力の `Transfer status: SUCCESS` と

@@ -91,7 +91,7 @@ export default function PremiumPanel() {
             この EVM アドレスに対応する Hedera testnet 口座がまだありません。
             次を実行して資金を投入してください:
           </p>
-          <code>pnpm --filter frontend fund {phase.evmAddress}</code>
+          <code>pnpm --filter frontend run fund {phase.evmAddress}</code>
           <p>
             <button type="button" onClick={() => void refresh()}>
               再確認
@@ -108,13 +108,17 @@ export default function PremiumPanel() {
             Account: <code>{phase.account.accountId}</code> — balance{" "}
             {formatHbar(phase.account.balanceTinybars)}
           </p>
-          <button
-            type="button"
-            onClick={() => void pay()}
-            disabled={phase.kind === "paying"}
-          >
-            {phase.kind === "paying" ? "支払い中…" : "支払って /premium を取得"}
-          </button>
+          {phase.kind !== "done" && (
+            <button
+              type="button"
+              onClick={() => void pay()}
+              disabled={phase.kind === "paying" || !embedded}
+            >
+              {phase.kind === "paying"
+                ? "支払い中…"
+                : "支払って /premium を取得"}
+            </button>
+          )}
         </div>
       )}
 
@@ -137,6 +141,11 @@ export default function PremiumPanel() {
               </a>
             </p>
           )}
+          <p>
+            <button type="button" onClick={() => void refresh()}>
+              もう一度
+            </button>
+          </p>
         </div>
       )}
 
