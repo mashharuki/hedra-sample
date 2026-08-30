@@ -120,3 +120,5 @@ Unrelated contracts may be displayed on Sourcify as a result.
   contracts/MyToken.sol:MyToken
   Explorer: https://sourcify.dev/server/repo-ui/296/0x94f5c9f6A59c257823FA5fECd8E7A15F8Ed94029
 ```
+
+[Verified Contract](https://hashscan.io/testnet/contract/0.0.10290464)
