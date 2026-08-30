@@ -5,15 +5,23 @@ import {
   TransactionId,
   TransferTransaction,
 } from "@hiero-ledger/sdk";
+import { secp256k1 } from "@noble/curves/secp256k1";
 import { keccak_256 } from "@noble/hashes/sha3";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 import type { PaymentRequirements } from "@x402/core/types";
 import type { ClientHederaSigner } from "@x402/hedera";
+import { isSupportedHederaNetwork } from "@x402/hedera";
 import { recoverEcdsaPublicKey } from "../hedera/recoverPublicKey";
 import { bytesToBase64 } from "../lib/encoding";
 
-/** Testnet consensus nodes used to freeze the transfer offline (no gRPC client). */
-const DEFAULT_NODE_ACCOUNT_IDS = ["0.0.3", "0.0.4", "0.0.5"];
+/**
+ * Consensus node used to freeze the transfer offline (no gRPC client).
+ *
+ * A single node keeps the signing flow to one Privy prompt per transaction and
+ * avoids a multi-node transaction that expires before every signature is
+ * collected. Callers can override this via `options.nodeAccountIds`.
+ */
+const DEFAULT_NODE_ACCOUNT_IDS = ["0.0.3"];
 
 export type SignRawHash = (hashHex: string) => Promise<string>;
 
@@ -27,13 +35,15 @@ export type PrivyHederaSignerOptions = {
 /** Normalizes a hex signature (0x-prefixed or not, 64 or 65 bytes) to 64-byte r||s. */
 export function toCompactSignature(sigHex: string): Uint8Array {
   const bytes = hexToBytes(sigHex.startsWith("0x") ? sigHex.slice(2) : sigHex);
-  if (bytes.length === 64) {
-    return bytes;
+  if (bytes.length !== 64 && bytes.length !== 65) {
+    throw new Error(`unexpected signature length: ${bytes.length}`);
   }
-  if (bytes.length === 65) {
-    return bytes.slice(0, 64);
-  }
-  throw new Error(`unexpected signature length: ${bytes.length}`);
+  // Hedera verifies with noble-curves `secp256k1.verify`, which defaults to
+  // `lowS: true`; canonicalize to low-S so a high-S Privy signature is accepted.
+  const compact = bytes.length === 65 ? bytes.slice(0, 64) : bytes;
+  return secp256k1.Signature.fromCompact(compact)
+    .normalizeS()
+    .toCompactRawBytes();
 }
 
 /**
@@ -73,6 +83,11 @@ export function createPrivyHederaSigner(
     createPartiallySignedTransferTransaction: async (
       requirements: PaymentRequirements,
     ): Promise<string> => {
+      if (!isSupportedHederaNetwork(requirements.network)) {
+        throw new Error(
+          `unsupported Hedera network: ${String(requirements.network)}`,
+        );
+      }
       const feePayer = requirements.extra?.feePayer;
       if (typeof feePayer !== "string") {
         throw new Error("feePayer is required in paymentRequirements.extra");

@@ -1,12 +1,8 @@
-import {
-  HEDERA_TESTNET_CAIP2,
-  HEDERA_TESTNET_MIRROR_NODE_URL,
-} from "@x402/hedera";
+import { HEDERA_TESTNET_MIRROR_NODE_URL } from "@x402/hedera";
 
 export type Config = {
   privyAppId: string;
   resourceServerUrl: string;
-  network: typeof HEDERA_TESTNET_CAIP2;
   mirrorNodeUrl: string;
 };
 
@@ -28,7 +24,6 @@ export function loadConfig(env: Env): Config {
   return {
     privyAppId,
     resourceServerUrl,
-    network: HEDERA_TESTNET_CAIP2,
     mirrorNodeUrl: HEDERA_TESTNET_MIRROR_NODE_URL,
   };
 }

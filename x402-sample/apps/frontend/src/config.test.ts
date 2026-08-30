@@ -12,7 +12,6 @@ describe("loadConfig", () => {
     expect(loadConfig(base)).toEqual({
       privyAppId: "app-123",
       resourceServerUrl: "http://localhost:4021",
-      network: "hedera:testnet",
       mirrorNodeUrl: "https://testnet.mirrornode.hedera.com",
     });
   });
