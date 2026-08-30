@@ -14,8 +14,7 @@
         "vite.config.ts",
         "vitest.config.ts"
       ],
-      "project": ["src/**/*.{ts,tsx}", "scripts/**/*.ts"],
-      "ignoreDependencies": ["dotenv"]
+      "project": ["src/**/*.{ts,tsx}", "scripts/**/*.ts"]
     }
   }
 }
