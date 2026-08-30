@@ -109,3 +109,45 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+.app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px;
+  text-align: left;
+}
+
+.panel {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.panel button {
+  font: inherit;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+.panel button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.panel pre {
+  background: var(--code-bg);
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.panel .error {
+  color: #d4183d;
+}
