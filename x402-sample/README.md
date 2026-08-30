@@ -45,6 +45,11 @@ RUN_LIVE_X402=1 pnpm test:live
 
 The client pays `PRICE_TINYBARS` (default: `1000`) of HBAR and prints the paid JSON response and settlement information. The normal test suite never sends a transaction. `pnpm run:client` is also available for direct CLI use.
 
+## Frontend (Privy)
+
+ブラウザから Privy 内蔵ウォレットで x402 支払いを行うサンプルは
+[`apps/frontend/README.md`](apps/frontend/README.md) を参照。
+
 ## Checks
 
 ```sh

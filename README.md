@@ -41,7 +41,8 @@ Solidityからネイティブサービスを呼ぶためのsystem contractには
    発行・移転・凍結・KYCなどをHTSで扱い、複雑な権利や償還ロジックだけをSolidityで実装するhybrid tokenizationが有効。例として、Kea CreditはAI審査とHedera上のtokenized lending vaultを組み合わせていると説明する。[Kea Credit](https://hedera.com/case-study/kea-credit/)
 
 2. **少額・高頻度の決済、x402、エージェント決済**  
-   USD建ての予測しやすい手数料と短いfinalityを生かし、pay-per-use、コンテンツ課金、IoT、agent-to-agent paymentを設計しやすい。公式テンプレートには、HBARとx402でファイル購入を決済する実装がある。[x402 Pay-per-use template](https://github.com/hedera-dev/scaffold-hbar/tree/templates/x402-pay-per-use)
+   USD建ての予測しやすい手数料と短いfinalityを生かし、pay-per-use、コンテンツ課金、IoT、agent-to-agent paymentを設計しやすい。公式テンプレートには、HBARとx402でファイル購入を決済する実装がある。[x402 Pay-per-use template](https://github.com/hedera-dev/scaffold-hbar/tree/templates/x402-pay-per-use)  
+   本リポジトリの `x402-sample/apps/frontend` は、Privy 内蔵ウォレットで x402 支払い署名を生成しブラウザから有料リソースを取得する実装例。
 
 3. **検証可能なイベントログとprovenance**  
    HCS topicに業務イベント、AIモデルの入出力ハッシュ、IoTデータの署名、証明書の参照を記録する。生データや個人情報を直接オンチェーンへ置く用途ではなく、オフチェーン保管＋ハッシュ/参照の設計が原則となる。ATECはIoT調理機器の利用データとGuardianを用いたカーボンクレジットの検証を事例として公表している。[ATEC](https://hedera.com/case-study/atec/)

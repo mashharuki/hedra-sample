@@ -1,32 +1,77 @@
-# React + TypeScript + Vite
+# frontend — x402 × Privy (Hedera testnet)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Privy 内蔵ウォレットで x402 の支払い署名データを生成し、`apps/server` の
+`/premium`（x402 保護リソース）をブラウザから取得するサンプル。
 
-Currently, two official plugins are available:
+> 以下のパスとコマンドはすべてリポジトリ内の `x402-sample/` ディレクトリを基準にする。
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## セットアップ
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```sh
+cp apps/frontend/.env.example apps/frontend/.env
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+`apps/frontend/.env` を設定:
+
+- `VITE_PRIVY_APP_ID` — Privy Dashboard の App ID
+- `VITE_RESOURCE_SERVER_URL` — 既定 `http://localhost:4021`
+
+Privy Dashboard 側:
+
+- Login methods に Email など任意の 1 つを有効化
+- Embedded wallets を有効化（EVM）
+- 開発を滑らかにするなら署名確認 UI を抑制（任意）
+
+サーバー側 `apps/server/.env` に `ALLOWED_ORIGINS=http://localhost:5173` を設定
+（Vite の既定ポート）。あわせて `PAY_TO_ACCOUNT_ID`（受取用 testnet 口座）を設定する。
+
+資金投入スクリプトは `apps/client/.env` の `PAYER_ACCOUNT_ID` /
+`PAYER_PRIVATE_KEY`（資金済み testnet 口座）を再利用する。未設定なら
+`cp apps/client/.env.example apps/client/.env` して埋める。
+
+## 実行
+
+```sh
+# 端末 1
+pnpm dev:server
+
+# 端末 2
+pnpm --filter frontend dev
+```
+
+## 手動 E2E 手順書
+
+1. `pnpm install`（初回のみ）。3 つの `.env`（`apps/server/.env` の
+   `PAY_TO_ACCOUNT_ID` / `ALLOWED_ORIGINS`、`apps/client/.env` の `PAYER_*`、
+   `apps/frontend/.env` の `VITE_*`）が揃っていることを確認する。
+2. 端末 1 で `pnpm dev:server`。別端末で
+   `curl http://localhost:4021/health` が `{"status":"ok"}` を返すことを確認。
+3. 端末 2 で `pnpm --filter frontend dev`。ブラウザで Vite の URL
+   （既定 `http://localhost:5173`）を開き、Privy でログインする。
+4. 表示された Wallet（EVM アドレス）に資金を投入:
+   ```sh
+   pnpm --filter frontend fund 0xあなたのアドレス
+   ```
+   `apps/client/.env` の資金済み口座から 5 ℏ を送金し、`0.0.X` を
+   lazy-create する。出力の `Transfer status: SUCCESS` と
+   `Hedera account id: 0.0.X` を確認する。
+5. 画面の「再確認」を押すと Account id と残高が表示される。
+6. 「支払って /premium を取得」→ Privy が生ハッシュ署名 →
+   レスポンス JSON
+   （`{ "message": "Payment settled on Hedera testnet.", "priceTinybars": "1000" }`）
+   と Settlement オブジェクトが表示される。
+7. 「HashScan で確認」リンク
+   （`https://hashscan.io/testnet/transaction/<transaction>`）で
+   トランザクションが SUCCESS であることを確認する。
+
+## 仕組み
+
+- `src/x402/privyHederaSigner.ts` が `@x402/hedera` の `ClientHederaSigner` を実装。
+  `TransferTransaction` を組み、`keccak256(bodyBytes)` を Privy の
+  `secp256k1_sign`（生ハッシュ署名）に渡して 64 バイト r‖s を添付する。
+- `src/x402/payPremium.ts` が `@x402/fetch` の `wrapFetchWithPayment` +
+  `x402Client` + `ExactHederaScheme` で 402 → 支払い → リトライを実行する
+  （`apps/client/src/index.ts` と同じ経路）。
+- 口座は `src/hedera/resolveAccount.ts` が mirror node で EVM アドレスから解決する。
+- 公開鍵は `src/hedera/recoverPublicKey.ts` が署名から secp256k1 公開鍵を復元する。
+- `settlementTxId` は `SettleResponse.transaction`（決済トランザクション ID）を読む。
