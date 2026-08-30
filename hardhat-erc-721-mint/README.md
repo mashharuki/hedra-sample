@@ -76,3 +76,47 @@ After setting the variable, you can run the deployment with the Sepolia network:
 ```shell
 npx hardhat ignition deploy --network sepolia ignition/modules/Counter.ts
 ```
+
+### Verify
+
+```bash
+bunx hardhat verify --network testnet 0x94f5c9f6A59c257823FA5fECd8E7A15F8Ed94029 0xcA341CE4902756bF9e96e145014DD0aB36A0Fe8E
+```
+
+```bash
+=== Etherscan ===
+[hardhat-keystore] Enter the password: ********
+HHE80000: The network "testnet" with chain id "296" is not supported.
+
+=== Blockscout ===
+HHE80000: The network "testnet" with chain id "296" is not supported.
+
+=== Sourcify ===
+
+📤 Submitted source code for verification on Sourcify:
+
+  contracts/MyToken.sol:MyToken
+  Address: 0x94f5c9f6A59c257823FA5fECd8E7A15F8Ed94029
+
+⏳ Waiting for verification result...
+
+
+The initial verification attempt for contracts/MyToken.sol:MyToken failed using the minimal compiler input.
+
+Trying again with the full solc input used to compile and deploy the contract.
+Unrelated contracts may be displayed on Sourcify as a result.
+
+
+📤 Submitted source code for verification on Sourcify:
+
+  contracts/MyToken.sol:MyToken
+  Address: 0x94f5c9f6A59c257823FA5fECd8E7A15F8Ed94029
+
+⏳ Waiting for verification result...
+
+
+✅ Contract verified successfully on Sourcify!
+
+  contracts/MyToken.sol:MyToken
+  Explorer: https://sourcify.dev/server/repo-ui/296/0x94f5c9f6A59c257823FA5fECd8E7A15F8Ed94029
+```

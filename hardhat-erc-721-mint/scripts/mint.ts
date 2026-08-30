@@ -15,7 +15,7 @@ async function main() {
 
   // Connect to the deployed contract
   // (REPLACE WITH YOUR CONTRACT ADDRESS)
-  const contractAddress = "0xcA341CE4902756bF9e96e145014DD0aB36A0Fe8E";
+  const contractAddress = "0x94f5c9f6A59c257823FA5fECd8E7A15F8Ed94029";
   const contract = MyToken.attach(contractAddress);
 
   // Mint a token to ourselves
