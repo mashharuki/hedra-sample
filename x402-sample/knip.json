@@ -15,14 +15,7 @@
         "vitest.config.ts"
       ],
       "project": ["src/**/*.{ts,tsx}", "scripts/**/*.ts"],
-      "ignoreDependencies": [
-        "@hiero-ledger/sdk",
-        "@noble/curves",
-        "@noble/hashes",
-        "@x402/core",
-        "@x402/fetch",
-        "dotenv"
-      ]
+      "ignoreDependencies": ["@x402/core", "@x402/fetch", "dotenv"]
     }
   }
 }
