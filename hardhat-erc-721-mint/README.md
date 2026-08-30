@@ -15,6 +15,21 @@ This example project includes:
 
 ## Usage
 
+### Setup
+
+```bash
+npx hardhat keystore set HEDERA_RPC_URL
+npx hardhat keystore set HEDERA_PRIVATE_KEY
+```
+
+テストネットの場合は`https://testnet.hashio.io/api`を設定する。
+
+以下のコマンドで設定状態を確認
+
+```bash
+npx hardhat keystore list
+```
+
 ### Running Tests
 
 To run all the tests in the project, execute the following command:
@@ -28,6 +43,12 @@ You can also selectively run the Solidity or `mocha` tests:
 ```shell
 npx hardhat test solidity
 npx hardhat test mocha
+```
+
+### Run console
+
+```bash
+bun run console --network testnet
 ```
 
 ### Make a deployment to Sepolia
