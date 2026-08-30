@@ -43,9 +43,10 @@ describe("payPremium", () => {
         }),
       );
     await payPremium(noopSigner, "http://localhost:4021");
-    const calledUrl = String(
-      (spy.mock.calls[0]?.[0] as URL | string) ?? "",
-    );
+    const arg = spy.mock.calls[0]?.[0];
+    const calledUrl =
+      arg instanceof Request ? arg.url : String(arg ?? "");
     expect(calledUrl).toContain("/premium");
+    expect(calledUrl).toContain("localhost:4021");
   });
 });
