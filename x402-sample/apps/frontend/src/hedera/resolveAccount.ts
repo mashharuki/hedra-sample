@@ -18,9 +18,7 @@ export async function resolveHederaAccount(
   mirrorNodeUrl: string,
 ): Promise<ResolvedHederaAccount | null> {
   const address = evmAddress.toLowerCase();
-  const response = await fetch(
-    `${mirrorNodeUrl}/api/v1/accounts/${address}`,
-  );
+  const response = await fetch(`${mirrorNodeUrl}/api/v1/accounts/${address}`);
 
   if (response.status === 404) {
     return null;

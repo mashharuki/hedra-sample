@@ -8,8 +8,8 @@ export type ClientConfig = {
 
 /**
  * 設定を読み込む
- * @param env 
- * @returns 
+ * @param env
+ * @returns
  */
 export function readClientConfig(
   env: NodeJS.ProcessEnv = process.env,

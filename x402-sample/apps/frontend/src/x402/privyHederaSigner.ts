@@ -1,17 +1,16 @@
-import { keccak_256 } from "@noble/hashes/sha3";
-import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 import {
   AccountId,
   Hbar,
-  PublicKey,
+  type PublicKey,
   TransactionId,
   TransferTransaction,
 } from "@hiero-ledger/sdk";
+import { keccak_256 } from "@noble/hashes/sha3";
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
 import type { PaymentRequirements } from "@x402/core/types";
 import type { ClientHederaSigner } from "@x402/hedera";
-
-import { bytesToBase64 } from "../lib/encoding";
 import { recoverEcdsaPublicKey } from "../hedera/recoverPublicKey";
+import { bytesToBase64 } from "../lib/encoding";
 
 /** Testnet consensus nodes used to freeze the transfer offline (no gRPC client). */
 const DEFAULT_NODE_ACCOUNT_IDS = ["0.0.3", "0.0.4", "0.0.5"];

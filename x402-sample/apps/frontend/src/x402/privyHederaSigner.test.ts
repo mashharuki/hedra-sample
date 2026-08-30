@@ -1,11 +1,14 @@
+import { Transaction, TransferTransaction } from "@hiero-ledger/sdk";
 import { secp256k1 } from "@noble/curves/secp256k1";
 import { keccak_256 } from "@noble/hashes/sha3";
 import { bytesToHex } from "@noble/hashes/utils";
-import { Transaction, TransferTransaction } from "@hiero-ledger/sdk";
 import type { PaymentRequirements } from "@x402/core/types";
 import { describe, expect, it } from "vitest";
 
-import { createPrivyHederaSigner, toCompactSignature } from "./privyHederaSigner";
+import {
+  createPrivyHederaSigner,
+  toCompactSignature,
+} from "./privyHederaSigner";
 
 const PRIV = new Uint8Array(32).fill(3);
 
@@ -66,9 +69,8 @@ describe("createPrivyHederaSigner", () => {
   });
 
   it("builds a base64 transfer that round-trips and nets to zero", async () => {
-    const base64 = await signer.createPartiallySignedTransferTransaction(
-      requirements,
-    );
+    const base64 =
+      await signer.createPartiallySignedTransferTransaction(requirements);
     const tx = Transaction.fromBytes(
       Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)),
     );
@@ -87,9 +89,8 @@ describe("createPrivyHederaSigner", () => {
   });
 
   it("attaches a signature that verifies against the wallet key", async () => {
-    const base64 = await signer.createPartiallySignedTransferTransaction(
-      requirements,
-    );
+    const base64 =
+      await signer.createPartiallySignedTransferTransaction(requirements);
     const tx = Transaction.fromBytes(
       Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)),
     );

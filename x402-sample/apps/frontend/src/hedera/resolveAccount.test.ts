@@ -13,7 +13,10 @@ describe("resolveHederaAccount", () => {
   it("returns the account id and balance when the account exists", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(
-        JSON.stringify({ account: "0.0.5005", balance: { balance: 499_000_000 } }),
+        JSON.stringify({
+          account: "0.0.5005",
+          balance: { balance: 499_000_000 },
+        }),
         { status: 200 },
       ),
     );

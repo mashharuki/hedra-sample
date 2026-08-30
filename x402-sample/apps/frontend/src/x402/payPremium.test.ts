@@ -34,18 +34,15 @@ describe("payPremium", () => {
   });
 
   it("requests the /premium path on the configured server", async () => {
-    const spy = vi
-      .spyOn(globalThis, "fetch")
-      .mockResolvedValue(
-        new Response(JSON.stringify({ message: "ok" }), {
-          status: 200,
-          headers: { "content-type": "application/json" },
-        }),
-      );
+    const spy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ message: "ok" }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    );
     await payPremium(noopSigner, "http://localhost:4021");
     const arg = spy.mock.calls[0]?.[0];
-    const calledUrl =
-      arg instanceof Request ? arg.url : String(arg ?? "");
+    const calledUrl = arg instanceof Request ? arg.url : String(arg ?? "");
     expect(calledUrl).toContain("/premium");
     expect(calledUrl).toContain("localhost:4021");
   });

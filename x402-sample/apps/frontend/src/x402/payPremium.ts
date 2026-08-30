@@ -1,10 +1,6 @@
-import {
-  wrapFetchWithPayment,
-  x402Client,
-  x402HTTPClient,
-} from "@x402/fetch";
-import { ExactHederaScheme } from "@x402/hedera/exact/client";
+import { wrapFetchWithPayment, x402Client, x402HTTPClient } from "@x402/fetch";
 import type { ClientHederaSigner } from "@x402/hedera";
+import { ExactHederaScheme } from "@x402/hedera/exact/client";
 
 export type PayPremiumResult = {
   body: unknown;
@@ -31,9 +27,7 @@ export async function payPremium(
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(
-      `Payment request failed (${response.status}): ${text}`,
-    );
+    throw new Error(`Payment request failed (${response.status}): ${text}`);
   }
 
   const body = await response.json();

@@ -1,7 +1,7 @@
+import { PublicKey } from "@hiero-ledger/sdk";
 import { secp256k1 } from "@noble/curves/secp256k1";
 import { keccak_256 } from "@noble/hashes/sha3";
 import { bytesToHex } from "@noble/hashes/utils";
-import { PublicKey } from "@hiero-ledger/sdk";
 
 function normalizeEvmAddress(address: string): string {
   const clean = (
@@ -29,9 +29,8 @@ export function recoverEcdsaPublicKey(
 
   for (let recovery = 0; recovery < 4; recovery += 1) {
     try {
-      const sig = secp256k1.Signature.fromCompact(signature).addRecoveryBit(
-        recovery,
-      );
+      const sig =
+        secp256k1.Signature.fromCompact(signature).addRecoveryBit(recovery);
       const point = sig.recoverPublicKey(digest);
       const uncompressed = point.toRawBytes(false); // 65 bytes, 0x04 prefix
       const derived = bytesToHex(keccak_256(uncompressed.slice(1)).slice(-20));
@@ -43,7 +42,5 @@ export function recoverEcdsaPublicKey(
     }
   }
 
-  throw new Error(
-    "could not recover a public key matching the wallet address",
-  );
+  throw new Error("could not recover a public key matching the wallet address");
 }

@@ -2,13 +2,13 @@ import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useCallback, useEffect, useState } from "react";
 
 import { getConfig } from "../config";
-import { resolveHederaAccount } from "../hedera/resolveAccount";
 import type { ResolvedHederaAccount } from "../hedera/resolveAccount";
+import { resolveHederaAccount } from "../hedera/resolveAccount";
+import { type PayPremiumResult, payPremium } from "../x402/payPremium";
 import {
   createPrivyHederaSigner,
   type SignRawHash,
 } from "../x402/privyHederaSigner";
-import { payPremium, type PayPremiumResult } from "../x402/payPremium";
 import { formatHbar } from "./formatHbar";
 
 type Phase =
@@ -23,7 +23,9 @@ export default function PremiumPanel() {
   const config = getConfig();
   const { user } = usePrivy();
   const { wallets } = useWallets();
-  const embedded = wallets.find((wallet) => wallet.walletClientType === "privy");
+  const embedded = wallets.find(
+    (wallet) => wallet.walletClientType === "privy",
+  );
   const evmAddress = embedded?.address ?? user?.wallet?.address ?? "";
 
   const [phase, setPhase] = useState<Phase>({ kind: "resolving" });
@@ -39,9 +41,7 @@ export default function PremiumPanel() {
         config.mirrorNodeUrl,
       );
       setPhase(
-        account
-          ? { kind: "ready", account }
-          : { kind: "unfunded", evmAddress },
+        account ? { kind: "ready", account } : { kind: "unfunded", evmAddress },
       );
     } catch (error) {
       setPhase({ kind: "error", message: describeError(error) });
@@ -113,9 +113,7 @@ export default function PremiumPanel() {
             onClick={() => void pay()}
             disabled={phase.kind === "paying"}
           >
-            {phase.kind === "paying"
-              ? "支払い中…"
-              : "支払って /premium を取得"}
+            {phase.kind === "paying" ? "支払い中…" : "支払って /premium を取得"}
           </button>
         </div>
       )}

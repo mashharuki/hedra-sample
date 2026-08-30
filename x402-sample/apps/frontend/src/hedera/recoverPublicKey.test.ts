@@ -29,11 +29,7 @@ describe("recoverEcdsaPublicKey", () => {
     const digest = keccak_256(message);
     const sig = secp256k1.sign(digest, PRIV).toCompactRawBytes();
 
-    const publicKey = recoverEcdsaPublicKey(
-      message,
-      sig,
-      evmAddressOf(PRIV),
-    );
+    const publicKey = recoverEcdsaPublicKey(message, sig, evmAddressOf(PRIV));
 
     // Hedera compressed ECDSA key hex is 33 bytes / 66 chars
     expect(publicKey.toStringRaw().length).toBe(66);

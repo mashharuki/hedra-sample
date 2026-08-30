@@ -1,4 +1,3 @@
-import { config as loadEnv } from "dotenv";
 import {
   AccountId,
   Client,
@@ -6,6 +5,7 @@ import {
   PrivateKey,
   TransferTransaction,
 } from "@hiero-ledger/sdk";
+import { config as loadEnv } from "dotenv";
 
 // Reuse the funded testnet payer already configured for the CLI client.
 loadEnv({ path: new URL("../../client/.env", import.meta.url).pathname });
