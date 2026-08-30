@@ -2,13 +2,14 @@ import { HTTPFacilitatorClient, x402ResourceServer } from "@x402/core/server";
 import { ExactHederaScheme } from "@x402/hedera/exact/server";
 import { paymentMiddleware } from "@x402/hono";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 
 import type { ServerConfig } from "./config.js";
 
 /**
  * Honoインスタンスを生成
- * @param config 
- * @returns 
+ * @param config
+ * @returns
  */
 export function createApp(config: ServerConfig): Hono {
   // Facilitatorクライアントとリソースサーバーを生成
@@ -23,6 +24,20 @@ export function createApp(config: ServerConfig): Hono {
   );
   // Honoインスタンスを生成
   const app = new Hono();
+
+  // ブラウザからのクロスオリジン呼び出しに対応するためCORSを追加
+  const corsMiddleware = cors({
+    origin: config.allowedOrigins,
+    allowMethods: ["GET", "OPTIONS"],
+    allowHeaders: ["Content-Type", "X-PAYMENT"],
+    exposeHeaders: [
+      "PAYMENT-REQUIRED",
+      "PAYMENT-RESPONSE",
+      "X-PAYMENT-RESPONSE",
+    ],
+  });
+  app.use("/health", corsMiddleware);
+  app.use("/premium", corsMiddleware);
 
   // ヘルスチェック用のエンドポイントを追加
   app.get("/health", (context) => context.json({ status: "ok" }));

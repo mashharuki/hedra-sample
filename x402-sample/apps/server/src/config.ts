@@ -5,6 +5,7 @@ export type ServerConfig = {
   payToAccountId: string;
   port: number;
   priceTinybars: string;
+  allowedOrigins: string[];
 };
 
 function required(value: string | undefined, name: string): string {
@@ -42,5 +43,27 @@ export function readServerConfig(
     throw new Error("FACILITATOR_URL must be a valid URL.");
   }
 
-  return { facilitatorUrl, payToAccountId, port, priceTinybars };
+  const allowedOriginsRaw = env.ALLOWED_ORIGINS ?? "http://localhost:5173";
+  const allowedOrigins = allowedOriginsRaw
+    .split(",")
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0);
+  if (allowedOrigins.length === 0) {
+    throw new Error("ALLOWED_ORIGINS must contain at least one origin.");
+  }
+  for (const origin of allowedOrigins) {
+    try {
+      new URL(origin);
+    } catch {
+      throw new Error(`ALLOWED_ORIGINS entry is not a valid URL: ${origin}`);
+    }
+  }
+
+  return {
+    facilitatorUrl,
+    payToAccountId,
+    port,
+    priceTinybars,
+    allowedOrigins,
+  };
 }
