@@ -10,12 +10,13 @@ afterEach(() => {
 });
 
 describe("resolveHederaAccount", () => {
-  it("returns the account id and balance when the account exists", async () => {
+  it("returns the account id, balance and key presence when the account exists", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(
         JSON.stringify({
           account: "0.0.5005",
           balance: { balance: 499_000_000 },
+          key: { _type: "ECDSA_SECP256K1", key: "02abcd" },
         }),
         { status: 200 },
       ),
@@ -24,7 +25,42 @@ describe("resolveHederaAccount", () => {
     expect(result).toEqual({
       accountId: "0.0.5005",
       balanceTinybars: 499_000_000n,
+      hasKey: true,
     });
+  });
+
+  it("reports hasKey=false for a hollow account (key is null)", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          account: "0.0.5006",
+          balance: { balance: 100_000_000 },
+          key: null,
+        }),
+        { status: 200 },
+      ),
+    );
+    const result = await resolveHederaAccount(EVM, MIRROR);
+    expect(result).toEqual({
+      accountId: "0.0.5006",
+      balanceTinybars: 100_000_000n,
+      hasKey: false,
+    });
+  });
+
+  it("reports hasKey=false when the key object has an empty key string", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          account: "0.0.5007",
+          balance: { balance: 0 },
+          key: { _type: "ProtobufEncoded", key: "" },
+        }),
+        { status: 200 },
+      ),
+    );
+    const result = await resolveHederaAccount(EVM, MIRROR);
+    expect(result?.hasKey).toBe(false);
   });
 
   it("calls the mirror node with the lowercased evm address path", async () => {

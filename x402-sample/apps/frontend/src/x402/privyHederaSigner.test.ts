@@ -6,7 +6,9 @@ import type { PaymentRequirements } from "@x402/core/types";
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  createHederaTransactionSigner,
   createPrivyHederaSigner,
+  recoverWalletPublicKey,
   toCompactSignature,
 } from "./privyHederaSigner";
 
@@ -80,6 +82,40 @@ describe("toCompactSignature", () => {
 
   it("throws on an unexpected length", () => {
     expect(() => toCompactSignature("0x1234")).toThrow("length");
+  });
+});
+
+describe("createHederaTransactionSigner", () => {
+  it("signs keccak256(bodyBytes) and returns a low-S 64-byte r||s", async () => {
+    const sign = createHederaTransactionSigner(fakeSignRawHash);
+    const body = new Uint8Array(48).fill(9);
+    const sig = await sign(body);
+    expect(sig).toHaveLength(64);
+    const parsed = secp256k1.Signature.fromCompact(sig);
+    expect(parsed.hasHighS()).toBe(false);
+    const pub = secp256k1.getPublicKey(PRIV, true);
+    expect(secp256k1.verify(sig, keccak_256(body), pub)).toBe(true);
+  });
+});
+
+describe("recoverWalletPublicKey", () => {
+  it("recovers the wallet's ECDSA public key from a probe signature", async () => {
+    const key = await recoverWalletPublicKey(
+      evmAddressOf(PRIV),
+      fakeSignRawHash,
+    );
+    expect(key.toStringRaw()).toBe(
+      bytesToHex(secp256k1.getPublicKey(PRIV, true)),
+    );
+  });
+
+  it("throws when the signature does not match the expected address", async () => {
+    await expect(
+      recoverWalletPublicKey(
+        "0x0000000000000000000000000000000000000000",
+        fakeSignRawHash,
+      ),
+    ).rejects.toThrow();
   });
 });
 

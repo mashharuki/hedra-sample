@@ -47,6 +47,36 @@ export function toCompactSignature(sigHex: string): Uint8Array {
 }
 
 /**
+ * Builds a `Transaction.signWith` callback that signs `keccak256(bodyBytes)`
+ * through a Privy raw-hash signer and returns a canonical low-S 64-byte r||s —
+ * the signature shape Hedera's ECDSA_SECP256K1 verification expects.
+ */
+export function createHederaTransactionSigner(
+  signRawHash: SignRawHash,
+): (bodyBytes: Uint8Array) => Promise<Uint8Array> {
+  return async (bodyBytes) => {
+    const digest = keccak_256(bodyBytes);
+    const sigHex = await signRawHash(`0x${bytesToHex(digest)}`);
+    return toCompactSignature(sigHex);
+  };
+}
+
+/**
+ * Recovers the Privy embedded wallet's secp256k1 public key by signing a fixed
+ * probe digest and matching the recovered key against the wallet's EVM address.
+ * The wallet never exposes its public key directly, so this is the only way to
+ * obtain a Hedera `PublicKey` for it.
+ */
+export async function recoverWalletPublicKey(
+  evmAddress: string,
+  signRawHash: SignRawHash,
+): Promise<PublicKey> {
+  const probe = new Uint8Array(32);
+  const probeSig = await createHederaTransactionSigner(signRawHash)(probe);
+  return recoverEcdsaPublicKey(probe, probeSig, evmAddress);
+}
+
+/**
  * Builds a `ClientHederaSigner` backed by a Privy embedded EVM wallet.
  *
  * Mirrors `@x402/hedera`'s default `createClientHederaSigner`, except the
@@ -66,15 +96,7 @@ export function createPrivyHederaSigner(
   let cachedPublicKey: PublicKey | undefined;
 
   const resolvePublicKey = async (): Promise<PublicKey> => {
-    if (cachedPublicKey) {
-      return cachedPublicKey;
-    }
-    const probe = new Uint8Array(32);
-    const probeDigest = keccak_256(probe);
-    const probeSig = toCompactSignature(
-      await signRawHash(`0x${bytesToHex(probeDigest)}`),
-    );
-    cachedPublicKey = recoverEcdsaPublicKey(probe, probeSig, evmAddress);
+    cachedPublicKey ??= await recoverWalletPublicKey(evmAddress, signRawHash);
     return cachedPublicKey;
   };
 
@@ -112,11 +134,7 @@ export function createPrivyHederaSigner(
         .setNodeAccountIds(nodeAccountIds)
         .freeze();
 
-      await tx.signWith(publicKey, async (bodyBytes) => {
-        const digest = keccak_256(bodyBytes);
-        const sigHex = await signRawHash(`0x${bytesToHex(digest)}`);
-        return toCompactSignature(sigHex);
-      });
+      await tx.signWith(publicKey, createHederaTransactionSigner(signRawHash));
 
       return bytesToBase64(tx.toBytes());
     },

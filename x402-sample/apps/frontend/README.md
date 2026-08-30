@@ -57,12 +57,18 @@ pnpm --filter frontend dev
    `apps/client/.env` の資金済み口座から 5 ℏ を送金し、`0.0.X` を
    lazy-create する。出力の `Transfer status: SUCCESS` と
    `Hedera account id: 0.0.X` を確認する。
-5. 画面の「再確認」を押すと Account id と残高が表示される。
-6. 「支払って /premium を取得」→ Privy が生ハッシュ署名 →
+5. 画面の「再確認」を押すと Account id と残高が表示される。この時点の口座は
+   **hollow account**（EVM エイリアス経由で作られ、まだ何も署名していない）で、
+   オンチェーンに公開鍵が無い。x402 facilitator は mirror node から payer の鍵を
+   引いて支払い署名を検証するため、この状態では支払いが弾かれる。
+6. 「アカウントを有効化」を押す。ウォレットの鍵で 1 tinybar のトランザクションを
+   1 回だけ送信し（ブラウザから gRPC-web で testnet ノードへ直接）、鍵を
+   オンチェーンに登録する。完了すると自動で残高表示に戻り、支払いボタンが出る。
+7. 「支払って /premium を取得」→ Privy が生ハッシュ署名 →
    レスポンス JSON
    （`{ "message": "Payment settled on Hedera testnet.", "priceTinybars": "1000" }`）
    と Settlement オブジェクトが表示される。
-7. 「HashScan で確認」リンク
+8. 「HashScan で確認」リンク
    （`https://hashscan.io/testnet/transaction/<transaction>`）で
    トランザクションが SUCCESS であることを確認する。
 
@@ -75,5 +81,10 @@ pnpm --filter frontend dev
   `x402Client` + `ExactHederaScheme` で 402 → 支払い → リトライを実行する
   （`apps/client/src/index.ts` と同じ経路）。
 - 口座は `src/hedera/resolveAccount.ts` が mirror node で EVM アドレスから解決する。
+  レスポンスの `key` が空なら hollow account と判定する（`hasKey: false`）。
+- `src/hedera/activateAccount.ts` が hollow account を有効化する。1 tinybar の
+  自己トランザクションをウォレットの鍵で署名し、SDK の gRPC-web クライアントで
+  testnet ノードへ直接送信する（アプリ内で consensus ノードに触れる唯一の箇所。
+  支払い経路はすべてオフライン）。
 - 公開鍵は `src/hedera/recoverPublicKey.ts` が署名から secp256k1 公開鍵を復元する。
 - `settlementTxId` は `SettleResponse.transaction`（決済トランザクション ID）を読む。

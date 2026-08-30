@@ -1,11 +1,20 @@
 type MirrorAccountResponse = {
   account: string;
   balance?: { balance?: number };
+  key?: { _type?: string; key?: string } | null;
 };
 
 export type ResolvedHederaAccount = {
   accountId: string;
   balanceTinybars: bigint;
+  /**
+   * `false` when the account is a "hollow" account (HIP-583): funded through an
+   * EVM-address alias but never activated by signing a transaction, so the
+   * network holds no public key for it. The x402 facilitator resolves the
+   * payer key from the Mirror Node to verify the payment signature, so a
+   * payment from a keyless account is rejected — it must be activated first.
+   */
+  hasKey: boolean;
 };
 
 /**
@@ -33,5 +42,6 @@ export async function resolveHederaAccount(
   return {
     accountId: body.account,
     balanceTinybars: BigInt(body.balance?.balance ?? 0),
+    hasKey: typeof body.key?.key === "string" && body.key.key.length > 0,
   };
 }

@@ -2,11 +2,13 @@ import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useCallback, useEffect, useState } from "react";
 
 import { getConfig } from "../config";
+import { activateHollowAccount } from "../hedera/activateAccount";
 import type { ResolvedHederaAccount } from "../hedera/resolveAccount";
 import { resolveHederaAccount } from "../hedera/resolveAccount";
 import { type PayPremiumResult, payPremium } from "../x402/payPremium";
 import {
   createPrivyHederaSigner,
+  recoverWalletPublicKey,
   type SignRawHash,
 } from "../x402/privyHederaSigner";
 import { formatHbar } from "./formatHbar";
@@ -14,6 +16,8 @@ import { formatHbar } from "./formatHbar";
 type Phase =
   | { kind: "resolving" }
   | { kind: "unfunded"; evmAddress: string }
+  | { kind: "needs-activation"; account: ResolvedHederaAccount }
+  | { kind: "activating"; account: ResolvedHederaAccount }
   | { kind: "ready"; account: ResolvedHederaAccount }
   | { kind: "paying"; account: ResolvedHederaAccount }
   | { kind: "done"; account: ResolvedHederaAccount; result: PayPremiumResult }
@@ -40,9 +44,13 @@ export default function PremiumPanel() {
         evmAddress,
         config.mirrorNodeUrl,
       );
-      setPhase(
-        account ? { kind: "ready", account } : { kind: "unfunded", evmAddress },
-      );
+      if (!account) {
+        setPhase({ kind: "unfunded", evmAddress });
+      } else if (!account.hasKey) {
+        setPhase({ kind: "needs-activation", account });
+      } else {
+        setPhase({ kind: "ready", account });
+      }
     } catch (error) {
       setPhase({ kind: "error", message: describeError(error) });
     }
@@ -52,6 +60,34 @@ export default function PremiumPanel() {
     void refresh();
   }, [refresh]);
 
+  const getSignRawHash = useCallback(async (): Promise<SignRawHash> => {
+    if (!embedded) {
+      throw new Error("Privy embedded wallet is not available");
+    }
+    const provider = await embedded.getEthereumProvider();
+    return async (hashHex) =>
+      (await provider.request({
+        method: "secp256k1_sign",
+        params: [hashHex],
+      })) as string;
+  }, [embedded]);
+
+  const activate = useCallback(async () => {
+    if (phase.kind !== "needs-activation" || !embedded) {
+      return;
+    }
+    const account = phase.account;
+    setPhase({ kind: "activating", account });
+    try {
+      const signRawHash = await getSignRawHash();
+      const publicKey = await recoverWalletPublicKey(evmAddress, signRawHash);
+      await activateHollowAccount(account.accountId, publicKey, signRawHash);
+      await refresh();
+    } catch (error) {
+      setPhase({ kind: "error", message: describeError(error) });
+    }
+  }, [phase, embedded, evmAddress, getSignRawHash, refresh]);
+
   const pay = useCallback(async () => {
     if (phase.kind !== "ready" || !embedded) {
       return;
@@ -59,13 +95,7 @@ export default function PremiumPanel() {
     const account = phase.account;
     setPhase({ kind: "paying", account });
     try {
-      const provider = await embedded.getEthereumProvider();
-      const signRawHash: SignRawHash = async (hashHex) =>
-        (await provider.request({
-          method: "secp256k1_sign",
-          params: [hashHex],
-        })) as string;
-
+      const signRawHash = await getSignRawHash();
       const signer = createPrivyHederaSigner({
         accountId: account.accountId,
         evmAddress,
@@ -76,7 +106,7 @@ export default function PremiumPanel() {
     } catch (error) {
       setPhase({ kind: "error", message: describeError(error) });
     }
-  }, [phase, embedded, evmAddress, config.resourceServerUrl]);
+  }, [phase, embedded, evmAddress, getSignRawHash, config.resourceServerUrl]);
 
   return (
     <section className="panel">
@@ -97,6 +127,28 @@ export default function PremiumPanel() {
               再確認
             </button>
           </p>
+        </div>
+      )}
+
+      {(phase.kind === "needs-activation" || phase.kind === "activating") && (
+        <div>
+          <p>
+            Account: <code>{phase.account.accountId}</code> — balance{" "}
+            {formatHbar(phase.account.balanceTinybars)}
+          </p>
+          <p>
+            この口座は資金は入っていますが、まだ有効化されていません（hollow
+            account）。オンチェーンに公開鍵が無いため x402
+            の支払いを検証できません。 有効化すると、ウォレットの鍵で 1 tinybar
+            のトランザクションを1回送信し、 鍵をオンチェーンに登録します。
+          </p>
+          <button
+            type="button"
+            onClick={() => void activate()}
+            disabled={phase.kind === "activating" || !embedded}
+          >
+            {phase.kind === "activating" ? "有効化中…" : "アカウントを有効化"}
+          </button>
         </div>
       )}
 

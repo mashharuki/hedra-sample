@@ -53,7 +53,10 @@ async function main(): Promise<void> {
     const body = (await lookup.json()) as { account: string };
     console.log("Hedera account id:", body.account);
     console.log(
-      "→ フロントの残高表示が更新されるまで数秒かかることがあります。",
+      "→ この口座は hollow account です。アプリで「アカウントを有効化」を押して",
+    );
+    console.log(
+      "  オンチェーンに鍵を登録してから支払ってください（x402 の検証に必要）。",
     );
   } else {
     console.log(
