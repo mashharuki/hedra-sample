@@ -29,7 +29,12 @@ export function createApp(config: ServerConfig): Hono {
   const corsMiddleware = cors({
     origin: config.allowedOrigins,
     allowMethods: ["GET", "OPTIONS"],
-    allowHeaders: ["Content-Type", "X-PAYMENT"],
+    allowHeaders: [
+      "Content-Type",
+      "PAYMENT-SIGNATURE",
+      "X-PAYMENT",
+      "Access-Control-Expose-Headers",
+    ],
     exposeHeaders: [
       "PAYMENT-REQUIRED",
       "PAYMENT-RESPONSE",

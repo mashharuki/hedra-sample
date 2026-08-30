@@ -26,20 +26,23 @@ describe("createApp CORS", () => {
     expect(expose).toContain("X-PAYMENT-RESPONSE");
   });
 
-  it("allows the X-PAYMENT request header on a /premium preflight", async () => {
+  it("allows the x402 v2 payment request headers on a /premium preflight", async () => {
     const app = createApp(config);
     const res = await app.request("/premium", {
       method: "OPTIONS",
       headers: {
         Origin: "http://localhost:5173",
         "Access-Control-Request-Method": "GET",
-        "Access-Control-Request-Headers": "x-payment",
+        "Access-Control-Request-Headers":
+          "payment-signature, access-control-expose-headers",
       },
     });
     expect(res.status).toBe(204);
-    expect(
-      (res.headers.get("access-control-allow-headers") ?? "").toLowerCase(),
-    ).toContain("x-payment");
+    const allowHeaders = (
+      res.headers.get("access-control-allow-headers") ?? ""
+    ).toLowerCase();
+    expect(allowHeaders).toContain("payment-signature");
+    expect(allowHeaders).toContain("access-control-expose-headers");
   });
 
   it("does not send CORS headers for a disallowed origin", async () => {
