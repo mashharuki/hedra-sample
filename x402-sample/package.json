@@ -7,6 +7,7 @@
     "dev:server": "pnpm --filter @x402-sample/server dev",
     "run:client": "pnpm --filter @x402-sample/client start",
     "test:live": "pnpm --filter @x402-sample/client test:live",
+    "frontend": "pnpm --filter frontend",
     "test": "pnpm --recursive run test",
     "lint": "biome check .",
     "format:check": "biome format .",
