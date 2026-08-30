@@ -16,7 +16,7 @@
         "vitest.config.ts"
       ],
       "project": ["src/**/*.{ts,tsx}", "scripts/**/*.ts"],
-      "ignoreDependencies": ["@x402/fetch", "dotenv"]
+      "ignoreDependencies": ["dotenv"]
     }
   }
 }
