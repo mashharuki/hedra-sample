@@ -26,15 +26,16 @@ function hasImdsv2Required(t: Template): boolean {
 describe("HederaSubgraphStack networking & compute", () => {
   it("opens only port 8000 to the world by default", () => {
     const t = synth();
-    t.hasResourceProperties("AWS::EC2::SecurityGroup", {
-      SecurityGroupIngress: Match.arrayWith([
-        Match.objectLike({
-          CidrIp: "0.0.0.0/0",
-          FromPort: 8000,
-          ToPort: 8000,
-          IpProtocol: "tcp",
-        }),
-      ]),
+    const sgs = t.findResources("AWS::EC2::SecurityGroup");
+    const ingress = Object.values(sgs).flatMap(
+      (r) => r.Properties?.SecurityGroupIngress ?? [],
+    );
+    expect(ingress).toHaveLength(1);
+    expect(ingress[0]).toMatchObject({
+      CidrIp: "0.0.0.0/0",
+      FromPort: 8000,
+      ToPort: 8000,
+      IpProtocol: "tcp",
     });
   });
 

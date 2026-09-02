@@ -27,8 +27,8 @@ export function buildUserData(opts: UserDataOptions): ec2.UserData {
     "apt-get update -y",
     "apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin",
     "systemctl enable --now docker",
-    // Node.js 20
-    "curl -fsSL https://deb.nodesource.com/setup_20.x | bash -",
+    // Node.js 22
+    "curl -fsSL https://deb.nodesource.com/setup_22.x | bash -",
     "apt-get install -y nodejs",
     "npm install -g pnpm@10",
     // アプリ取得

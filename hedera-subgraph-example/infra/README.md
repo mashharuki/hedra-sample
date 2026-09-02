@@ -6,7 +6,12 @@
 ## 前提
 
 - Node.js 20+ / pnpm / AWS CLI v2 / 認証済みの AWS プロファイル（またはSSO）
-- リポジトリの `main` が GitHub に push 済みであること（userData が clone する）
+
+> **重要:** `cdk deploy` の前に、この `infra/` と `deploy/` を含むブランチを `main` にマージして
+> GitHub に push しておくこと。EC2 の userData は `git clone --depth 1 --branch main` で取得するため、
+> `main` に `deploy/ec2-bootstrap.sh` が無いと初回ブートストラップが失敗する。
+
+- port 22 (`allowedSshCidr`) を使う場合は別途キーペアの指定が必要。通常は SSM Session Manager（下記）を使う。
 
 ## セットアップ
 
@@ -62,7 +67,8 @@ sudo docker compose -f deploy/docker-compose.prod.yaml logs -f graph-node
 
 | 症状 | 対処 |
 |---|---|
-| graph-node が `collation` エラーで起動しない | `deploy/docker-compose.prod.yaml` の `postgres` に `POSTGRES_INITDB_ARGS: '-E UTF8 --locale=C'` を足し、`sudo rm -rf data/postgres` して `docker compose ... up -d` で作り直す |
+| graph-node が `collation` エラーで起動しない | `deploy/docker-compose.prod.yaml` の `postgres` に `POSTGRES_INITDB_ARGS: '-E UTF8 --locale=C'` を足し、`cd /opt/app/hedera-subgraph-example && sudo rm -rf data/postgres` して `docker compose ... up -d` で作り直す（永続データは app ルート直下の `data/postgres`） |
+| サブグラフを貼り直したい / 再デプロイしたい | `git -C /opt/app/hedera-subgraph-example pull` してから `sudo FORCE_REDEPLOY=1 bash /opt/app/hedera-subgraph-example/deploy/ec2-bootstrap.sh` |
 | 同期が異常に遅い / RPC エラー多発 | Hashio のレート制限。`config/testnet.json` の `startBlock` を最近のブロックに上げて `pnpm compile` → `pnpm exec graph deploy --version-label v0.0.2 MyToken`。または `/opt/app/hedera-subgraph-example/.env` に `GRAPH_ETHEREUM_RPC=testnet:<専用RPC>` を書いて `docker compose ... up -d` |
 | userData が途中で失敗 | ログを確認し原因を潰したあと、`sudo bash /opt/app/hedera-subgraph-example/deploy/ec2-bootstrap.sh` を手動再実行（冪等） |
 

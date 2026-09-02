@@ -12,7 +12,7 @@ exec > >(tee -a "${LOG}") 2>&1
 cd "${APP_DIR}"
 
 echo "[bootstrap] starting compose stack"
-docker compose -f "${COMPOSE_FILE}" up -d
+docker compose --project-directory "${APP_DIR}" -f "${COMPOSE_FILE}" up -d
 
 echo "[bootstrap] waiting for graph-node admin endpoint on :8020 (up to 10 min for first-boot image pulls)"
 admin_up=false
@@ -29,8 +29,8 @@ if [ "${admin_up}" != "true" ]; then
   echo "[bootstrap] WARNING: graph-node admin not reachable after 10 min; attempting deploy anyway"
 fi
 
-if [ -f "${SENTINEL}" ]; then
-  echo "[bootstrap] sentinel present; subgraph already deployed. Done."
+if [ -f "${SENTINEL}" ] && [ "${FORCE_REDEPLOY:-}" != "1" ]; then
+  echo "[bootstrap] sentinel present; subgraph already deployed. Set FORCE_REDEPLOY=1 to redeploy. Done."
   exit 0
 fi
 

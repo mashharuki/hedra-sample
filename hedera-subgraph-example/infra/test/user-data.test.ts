@@ -13,7 +13,7 @@ describe("buildUserData", () => {
 
   it("installs docker and node, then clones the given repo/branch", () => {
     expect(script).toContain("docker-compose-plugin");
-    expect(script).toContain("setup_20.x");
+    expect(script).toContain("setup_22.x");
     expect(script).toContain(
       "git clone --branch main --depth 1 https://github.com/example/repo.git /opt/app",
     );

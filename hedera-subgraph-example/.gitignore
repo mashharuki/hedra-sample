@@ -3,4 +3,5 @@
 /build/
 /generated/
 /graph-node/data/
+/deploy/data/
 /subgraph.yaml
