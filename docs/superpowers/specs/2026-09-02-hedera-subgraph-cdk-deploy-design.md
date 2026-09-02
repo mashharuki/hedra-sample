@@ -122,9 +122,10 @@ Hedera Testnet でインデックスするサブグラフで、ローカルの g
 
 - `graph-node`: `ports` を `["8000:8000", "127.0.0.1:8001:8001", "127.0.0.1:8020:8020", "127.0.0.1:8030:8030", "127.0.0.1:8040:8040"]`
 - `ipfs`: `ports` を `["127.0.0.1:5001:5001"]`
-- `postgres`: `ports` を `["127.0.0.1:5432:5432"]`、イメージを `postgres:15` に固定
-  （※graph-node v0.27.0 と PG 17/18 の相性リスク回避。問題時はローカルで動いた版に合わせる）
+- `postgres`: `ports` を `["127.0.0.1:5432:5432"]`。イメージはローカルで動作実績のある構成に忠実に
+  **`postgres`（版指定なし）のまま**とする（1 週間運用なので再現性より実績を優先）
 - 全サービスに `restart: unless-stopped`
+- 廃止された `version: '3'` は削除し、`name: hedera-subgraph` を付与
 - `ethereum` の RPC は `testnet:${GRAPH_ETHEREUM_RPC:-https://testnet.hashio.io/api}` として `.env` で上書き可能に
 - データ bind mount（`./data/...`）はそのまま。実体は `/opt/app/hedera-subgraph-example/data/`
 
@@ -206,7 +207,7 @@ fi
 | リスク | 対策 |
 |---|---|
 | Hashio のレート制限で初回バックフィル(startBlock 39895777〜)が遅い/失敗 | README に明記。必要なら `config/testnet.json` の `startBlock` を引き上げて再 `compile`/`deploy`、または `.env` で専用 RPC に差し替え |
-| graph-node v0.27.0 と postgres の版ズレ | `postgres:15` に固定。問題時はローカルの `docker inspect` の版に合わせる |
+| graph-node が postgres の collation エラーで起動しない | 初回ログを確認し、出た場合のみ `POSTGRES_INITDB_ARGS: '-E UTF8 --locale=C'` を追加して `data/postgres` を作り直す |
 | userData 失敗時に気づきにくい | `ec2-bootstrap.sh` の出力を `/var/log/subgraph-bootstrap.log` に保存。SSM で確認する手順を README に |
 | `git clone` するのでサブグラフを push 必須 | 実装プランの最初のステップで commit + push を実施 |
 | `graph deploy` の対話プロンプト（version label） | `--version-label v0.0.1` を明示して非対話化 |
