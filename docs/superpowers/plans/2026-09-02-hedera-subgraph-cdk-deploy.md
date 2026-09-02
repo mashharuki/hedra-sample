@@ -409,7 +409,7 @@ export class HederaSubgraphStack extends cdk.Stack {
 - [ ] **Step 4: テストを実行して通過を確認**
 
 Run: `cd hedera-subgraph-example/infra && pnpm test`
-Expected: PASS（5 テストすべて緑）
+Expected: PASS（この describe の 6 テストすべて緑）
 
 備考: `ec2.Vpc.fromLookup` は context 未解決時にダミー VPC (`vpc-12345`) を返すため、テストは context ファイルなしで動く。
 
@@ -584,7 +584,8 @@ Expected: FAIL（`AWS::EC2::EIP` が 0 件、outputs 不足）
 import { buildUserData } from "./user-data.js";
 ```
 
-`this.instance = new ec2.Instance(...)` の呼び出しに `userData` を追加:
+`machineImage` 宣言の直後に `userData` を作り、`this.instance = new ec2.Instance(...)` を
+以下の完全な形に置き換える（`userData` と `userDataCausesReplacement` の 2 行が増えるだけ、他は Task 2 と同一）:
 ```ts
     const userData = buildUserData({
       repoUrl: props.repoUrl,
@@ -592,9 +593,26 @@ import { buildUserData } from "./user-data.js";
     });
 
     this.instance = new ec2.Instance(this, "SubgraphHost", {
-      // ...既存プロパティ...
+      vpc,
+      vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
+      instanceType: new ec2.InstanceType(props.instanceType),
+      machineImage,
+      securityGroup,
+      role,
+      requireImdsv2: true,
+      associatePublicIpAddress: true,
       userData,
       userDataCausesReplacement: true,
+      blockDevices: [
+        {
+          deviceName: "/dev/sda1",
+          volume: ec2.BlockDeviceVolume.ebs(30, {
+            volumeType: ec2.EbsDeviceVolumeType.GP3,
+            encrypted: true,
+            deleteOnTermination: true,
+          }),
+        },
+      ],
     });
 ```
 
@@ -622,7 +640,7 @@ constructor 末尾（instance 生成後）に追加:
 - [ ] **Step 8: 全テスト実行 → 通過確認**
 
 Run: `cd hedera-subgraph-example/infra && pnpm test`
-Expected: PASS（Task 2 の 5 + EIP/outputs の 3 + user-data の 4 = 12 テスト緑）
+Expected: PASS（Task 2 の 6 + EIP/outputs の 3 + user-data の 4 = 13 テスト緑）
 
 - [ ] **Step 9: 型チェック**
 
@@ -931,15 +949,16 @@ git add infra/README.md README.md
 git commit -m "Document CDK EC2 deployment workflow"
 ```
 
-- [ ] **Step 4: リモートへ push**
+- [ ] **Step 4: （push はこの Task では行わない — preflight ruling）**
 
-Run: `git push origin main`
-Expected: `main` が GitHub に反映される。以降 `cdk deploy` の userData が最新の `deploy/` を clone できる。
+このセッションは worktree ブランチ上で作業しているため、`git push origin main` はここでは実行しない。
+`main` へのマージ + push は最後に `finishing-a-development-branch` で行う。
+（`cdk deploy` の userData は `main` を clone するので、実デプロイ前にマージ + push が完了している必要がある）
 
 - [ ] **Step 5: 最終確認**
 
 Run: `cd hedera-subgraph-example/infra && pnpm test && pnpm typecheck && echo "ALL GREEN"`
-Expected: `ALL GREEN`（12 テスト緑 + 型エラーなし）
+Expected: `ALL GREEN`（13 テスト緑 + 型エラーなし）
 AWS 認証情報がある環境では続けて `pnpm exec cdk synth --quiet` も成功すること。
 
 ---
