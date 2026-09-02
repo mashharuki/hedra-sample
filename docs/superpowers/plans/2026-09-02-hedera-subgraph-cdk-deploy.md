@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - 作業ディレクトリは基本 `hedera-subgraph-example/infra/`。既存の `graph-node/docker-compose.yaml` と `src/`・`schema.graphql`・`subgraph.template.yaml` は変更しない。
-- `infra/` はパッケージマネージャに **pnpm** を使う（親 `hedera-subgraph-example` と同じ）。`pnpm-workspace.yaml` は作らない（独立プロジェクト）。
+- `infra/` はパッケージマネージャに **pnpm** を使う（親 `hedera-subgraph-example` と同じ）。`infra/pnpm-workspace.yaml` は **設定専用**（`allowBuilds: { esbuild: true }` のみ、`packages:` キーは書かない）で置いてよい — pnpm 11.24 がビルドスクリプト承認をこのファイルでしか記録しないため。sibling パッケージを取り込む workspace 宣言には使わない。
 - CDK ライブラリ: `aws-cdk-lib@^2.267.0`、`constructs@^10.8.1`。CLI は devDependency `aws-cdk@^2.1139.0`（グローバル CDK に依存しない）。
 - 既定リージョンは `ap-northeast-1`。`env` は `CDK_DEFAULT_ACCOUNT` / `CDK_DEFAULT_REGION` を優先し、region 未設定時のみ `ap-northeast-1` にフォールバック。
 - EC2 は必ず `requireImdsv2: true`。Security Group の inbound は 8000/tcp のみ（`allowedSshCidr` context 指定時のみ 22/tcp を追加）。IAM は `AmazonSSMManagedInstanceCore` のみ。
@@ -33,6 +33,7 @@
 | パス | 責務 |
 |---|---|
 | `hedera-subgraph-example/infra/package.json` | CDK プロジェクトの依存とスクリプト（`cdk` / `test` / `synth`） |
+| `hedera-subgraph-example/infra/pnpm-workspace.yaml` | pnpm 11 設定専用（`allowBuilds: { esbuild: true }`）。`packages:` は書かない |
 | `hedera-subgraph-example/infra/tsconfig.json` | TypeScript コンパイラ設定 |
 | `hedera-subgraph-example/infra/cdk.json` | CDK アプリ起動コマンド（`npx tsx bin/infra.ts`）と feature flags |
 | `hedera-subgraph-example/infra/.gitignore` | `node_modules/` `cdk.out/` `*.js` `*.d.ts` を無視 |
@@ -562,11 +563,13 @@ describe("HederaSubgraphStack EIP & outputs", () => {
     );
   });
 
-  it("passes the bootstrap script call into instance user data", () => {
-    const t = synth();
-    t.hasResourceProperties("AWS::EC2::Instance", {
-      UserData: Match.anyValue(),
-    });
+  it("bakes the bootstrap script call into the rendered user data", () => {
+    // userData は Instance か LaunchTemplate のどちらに乗るかが feature flag で変わるが、
+    // Fn::Base64(Fn::Join(...)) の中身は平文でテンプレート JSON に現れるので位置非依存で検証する。
+    const json = JSON.stringify(synth().toJSON());
+    expect(json).toContain(
+      "bash /opt/app/hedera-subgraph-example/deploy/ec2-bootstrap.sh",
+    );
   });
 });
 ```
