@@ -83,3 +83,35 @@ describe("HederaSubgraphStack networking & compute", () => {
     expect(roles).not.toContain("PowerUserAccess");
   });
 });
+
+describe("HederaSubgraphStack EIP & outputs", () => {
+  it("allocates an Elastic IP and associates it with the instance", () => {
+    const t = synth();
+    t.resourceCountIs("AWS::EC2::EIP", 1);
+    t.hasResourceProperties("AWS::EC2::EIPAssociation", {
+      InstanceId: Match.anyValue(),
+    });
+  });
+
+  it("exports the GraphQL URL and SSM command as outputs", () => {
+    const t = synth();
+    const keys = Object.keys(t.toJSON().Outputs ?? {});
+    expect(keys).toEqual(
+      expect.arrayContaining([
+        "GraphqlUrl",
+        "ElasticIp",
+        "InstanceId",
+        "SsmStartSessionCommand",
+      ]),
+    );
+  });
+
+  it("bakes the bootstrap script call into the rendered user data", () => {
+    // userData は Instance か LaunchTemplate のどちらに乗るかが feature flag で変わるが、
+    // Fn::Base64(Fn::Join(...)) の中身は平文でテンプレート JSON に現れるので位置非依存で検証する。
+    const json = JSON.stringify(synth().toJSON());
+    expect(json).toContain(
+      "bash /opt/app/hedera-subgraph-example/deploy/ec2-bootstrap.sh",
+    );
+  });
+});
