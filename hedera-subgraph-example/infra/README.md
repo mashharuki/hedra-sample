@@ -60,16 +60,20 @@ aws ssm start-session --target <InstanceId> --region ap-northeast-1
 sudo tail -n 200 -f /var/log/subgraph-userdata.log
 sudo tail -n 200 -f /var/log/subgraph-bootstrap.log
 cd /opt/app/hedera-subgraph-example
-sudo docker compose -f deploy/docker-compose.prod.yaml logs -f graph-node
+sudo docker compose --project-directory . -f deploy/docker-compose.prod.yaml logs -f graph-node
 ```
+
+> compose を手で叩くときは `ec2-bootstrap.sh` と同じく必ず
+> `--project-directory /opt/app/hedera-subgraph-example`（上のように `cd` 済みなら `--project-directory .`）を付けること。
+> 付けないと `./data/*` と `.env` が `deploy/` 配下に解決され、ブートストラップが作ったデータと別物を見てしまう。
 
 よくある問題:
 
 | 症状 | 対処 |
 |---|---|
-| graph-node が `collation` エラーで起動しない | `deploy/docker-compose.prod.yaml` の `postgres` に `POSTGRES_INITDB_ARGS: '-E UTF8 --locale=C'` を足し、`cd /opt/app/hedera-subgraph-example && sudo rm -rf data/postgres` して `docker compose ... up -d` で作り直す（永続データは app ルート直下の `data/postgres`） |
+| graph-node が `collation` エラーで起動しない | `deploy/docker-compose.prod.yaml` の `postgres` に `POSTGRES_INITDB_ARGS: '-E UTF8 --locale=C'` を足し、`cd /opt/app/hedera-subgraph-example && sudo rm -rf data/postgres` して `sudo docker compose --project-directory . -f deploy/docker-compose.prod.yaml up -d` で作り直す（永続データは app ルート直下の `data/postgres`） |
 | サブグラフを貼り直したい / 再デプロイしたい | `git -C /opt/app/hedera-subgraph-example pull` してから `sudo FORCE_REDEPLOY=1 bash /opt/app/hedera-subgraph-example/deploy/ec2-bootstrap.sh` |
-| 同期が異常に遅い / RPC エラー多発 | Hashio のレート制限。`config/testnet.json` の `startBlock` を最近のブロックに上げて `pnpm compile` → `pnpm exec graph deploy --version-label v0.0.2 MyToken`。または `/opt/app/hedera-subgraph-example/.env` に `GRAPH_ETHEREUM_RPC=testnet:<専用RPC>` を書いて `docker compose ... up -d` |
+| 同期が異常に遅い / RPC エラー多発 | Hashio のレート制限。`config/testnet.json` の `startBlock` を最近のブロックに上げて `pnpm compile` → `pnpm exec graph deploy --version-label v0.0.2 MyToken`。または `/opt/app/hedera-subgraph-example/.env` に `GRAPH_ETHEREUM_RPC=testnet:<専用RPC>` を書いて `cd /opt/app/hedera-subgraph-example && sudo docker compose --project-directory . -f deploy/docker-compose.prod.yaml up -d` |
 | userData が途中で失敗 | ログを確認し原因を潰したあと、`sudo bash /opt/app/hedera-subgraph-example/deploy/ec2-bootstrap.sh` を手動再実行（冪等） |
 
 ## 撤去
