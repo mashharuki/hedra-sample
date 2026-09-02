@@ -124,7 +124,6 @@
     "exclude": ["README.md", "cdk*.json", "**/*.d.ts", "node_modules", "test", "cdk.out"]
   },
   "context": {
-    "@aws-cdk/core:enableStackNameDuplicates": false,
     "@aws-cdk/aws-ec2:launchTemplateDefaultUserData": true,
     "@aws-cdk/core:checkSecretUsage": true,
     "@aws-cdk/aws-iam:minimizePolicies": true,
