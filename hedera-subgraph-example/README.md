@@ -47,6 +47,13 @@ graph-node にデプロイして GraphQL で NFT の保有状況・移転履歴�
 - `graph-node/docker-compose.yaml` — ローカル graph-node / IPFS / Postgres
 - `generated/` — `graph codegen` が生成する型（gitignore 対象）
 
+## AWS へのデプロイ
+
+ローカルではなく AWS 上（EC2 単一ホスト）で常時稼働させる場合は
+[`infra/README.md`](infra/README.md) を参照。CDK (TypeScript) で
+`cdk deploy` 一発で graph-node ごと立ち上がり、
+`http://<Elastic IP>:8000/subgraphs/name/MyToken` で公開される。
+
 ## セットアップ
 
 1. 依存関係をインストール:
