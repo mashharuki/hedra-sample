@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as iam from "aws-cdk-lib/aws-iam";
 import type { Construct } from "constructs";
+import { buildUserData } from "./user-data.js";
 
 export interface HederaSubgraphStackProps extends cdk.StackProps {
   /** userData が clone する Git リポジトリ URL */
@@ -54,6 +55,11 @@ export class HederaSubgraphStack extends cdk.Stack {
       { os: ec2.OperatingSystemType.LINUX },
     );
 
+    const userData = buildUserData({
+      repoUrl: props.repoUrl,
+      repoBranch: props.repoBranch,
+    });
+
     this.instance = new ec2.Instance(this, "SubgraphHost", {
       vpc,
       vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
@@ -63,6 +69,8 @@ export class HederaSubgraphStack extends cdk.Stack {
       role,
       requireImdsv2: true,
       associatePublicIpAddress: true,
+      userData,
+      userDataCausesReplacement: true,
       blockDevices: [
         {
           deviceName: "/dev/sda1",
@@ -73,6 +81,24 @@ export class HederaSubgraphStack extends cdk.Stack {
           }),
         },
       ],
+    });
+
+    const eip = new ec2.CfnEIP(this, "SubgraphEip", {
+      domain: "vpc",
+      tags: [{ key: "Name", value: "hedera-subgraph" }],
+    });
+    new ec2.CfnEIPAssociation(this, "SubgraphEipAssoc", {
+      allocationId: eip.attrAllocationId,
+      instanceId: this.instance.instanceId,
+    });
+
+    new cdk.CfnOutput(this, "ElasticIp", { value: eip.ref });
+    new cdk.CfnOutput(this, "InstanceId", { value: this.instance.instanceId });
+    new cdk.CfnOutput(this, "GraphqlUrl", {
+      value: `http://${eip.ref}:8000/subgraphs/name/MyToken`,
+    });
+    new cdk.CfnOutput(this, "SsmStartSessionCommand", {
+      value: `aws ssm start-session --target ${this.instance.instanceId} --region ${this.region}`,
     });
   }
 }

@@ -83,3 +83,33 @@ describe("HederaSubgraphStack networking & compute", () => {
     expect(roles).not.toContain("PowerUserAccess");
   });
 });
+
+describe("HederaSubgraphStack EIP & outputs", () => {
+  it("allocates an Elastic IP and associates it with the instance", () => {
+    const t = synth();
+    t.resourceCountIs("AWS::EC2::EIP", 1);
+    t.hasResourceProperties("AWS::EC2::EIPAssociation", {
+      InstanceId: Match.anyValue(),
+    });
+  });
+
+  it("exports the GraphQL URL and SSM command as outputs", () => {
+    const t = synth();
+    const keys = Object.keys(t.toJSON().Outputs ?? {});
+    expect(keys).toEqual(
+      expect.arrayContaining([
+        "GraphqlUrl",
+        "ElasticIp",
+        "InstanceId",
+        "SsmStartSessionCommand",
+      ]),
+    );
+  });
+
+  it("passes the bootstrap script call into instance user data", () => {
+    const t = synth();
+    t.hasResourceProperties("AWS::EC2::Instance", {
+      UserData: Match.anyValue(),
+    });
+  });
+});
